@@ -1,4 +1,4 @@
-# Diffractor
+# 1-Diffractor
 Code repository for `1-Diffractor`, a highly efficient word-level Metric Differential Privacy mechanism.
 
 ## Quick Start
