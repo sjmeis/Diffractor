@@ -1,0 +1,8 @@
+diffprivlib
+faiss_cpu
+gensim
+importlib_resources
+nltk
+numpy
+scipy
+tqdm
