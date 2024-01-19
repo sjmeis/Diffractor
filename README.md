@@ -12,7 +12,7 @@ In order to create a Lists object, use must initialize with the following parame
 
 To create the Lists, simply call `L = Diffractor.Lists(**args)`. This process will take a short while, depending on the above parameters.
 
-NOTE: for the default set of lists you must download the models from the following [https://drive.google.com/drive/folders/1ExL4XIxYCK1_9oiy5PwwMlxwqCImYW9W?usp=sharing](directory). Then you must specify the corresponding *home* argument.
+NOTE: for the default set of lists you must download the models from the following [directory](https://drive.google.com/drive/folders/1ExL4XIxYCK1_9oiy5PwwMlxwqCImYW9W?usp=sharing). Then you must specify the corresponding *home* argument.
 
 ### Initalializing the Diffractor
 With the Lists object ready, you can now set up a Diffractor. Some parameters here:
