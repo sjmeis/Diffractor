@@ -24,11 +24,11 @@ import importlib_resources as impresources
 stop = set([x for x in stopwords.words("english")])
 punct = string.punctuation
 
-def worker_init(eps, lists, mapping_word, func, st, rn, sc):
+def worker_init(lists, mapping_word, func, st, rn, sc):
     global my_idx
     global my_list
     global my_mapping
-    global epsilon
+    #global epsilon
     global function
     global rep_stop
     global my_rng
@@ -37,21 +37,24 @@ def worker_init(eps, lists, mapping_word, func, st, rn, sc):
     my_idx = mp.current_process()._identity[0] % len(lists)
     my_list = lists[my_idx].copy()
     my_mapping = mapping_word.copy()
-    epsilon = eps
+    #epsilon = eps
     function = func
     rep_stop = st
     my_rng = np.random.default_rng(rn[my_idx])
     scoring = sc
 
-def get_cand(tokens):
+def get_cand(arg):
     global my_idx
     global my_list
     global my_mapping
-    global epsilon
+    #global epsilon
     global function
     global rep_stop
     global my_rng
     global scoring
+
+    tokens = arg[0]
+    epsilon = arg[1]
 
     cands = []
     for t in tokens:
@@ -342,7 +345,7 @@ class Diffractor():
         self.RNG = np.random.default_rng(42)
         self.SS = np.random.SeedSequence(42)
 
-        self.geo_mech = diffprivlib.mechanisms.GeometricTruncated(epsilon=self.epsilon, lower=0, upper=min([len(x)-1 for x in L.lists]))
+        #self.geo_mech = diffprivlib.mechanisms.GeometricTruncated(epsilon=self.epsilon, lower=0, upper=min([len(x)-1 for x in L.lists]))
         if method == "TEM":
             METHOD = self.truncated_exponential
         else:
@@ -350,7 +353,7 @@ class Diffractor():
 
         num_workers = len(self.L.lists)
         rns = self.SS.spawn(num_workers)
-        self.pool = mp.Pool(num_workers, initializer=worker_init, initargs=(self.epsilon, self.L.lists, self.L.mapping_word, METHOD, self.rep_stop, rns, self.scoring))
+        self.pool = mp.Pool(num_workers, initializer=worker_init, initargs=(self.L.lists, self.L.mapping_word, METHOD, self.rep_stop, rns, self.scoring))
         pass
 
     def cleanup(self):
@@ -358,16 +361,26 @@ class Diffractor():
         del self.L
         print("Cleanup complete.")
 
-    def rewrite(self, texts):
+    def rewrite(self, texts, epsilon=None):
+        if not isinstance(texts, list):
+            texts = [texts]
+        
+        if epsilon is not None and not isinstance(epsilon, list):
+            print("Invalid epsilon format.")
+            return
+        elif epsilon is None:
+            epsilon = [epsilon for _ in range(tokens)]
+
         total_lists = len(self.L.lists)
         perturbed = []
         num_perturbed = 0
         num_diff = 0
         total = 0
         support = []
-        for s in tqdm(texts, disable=self.progress_bar):
+        for i, s in enumerate(tqdm(texts, disable=self.progress_bar)):
             tokens = nltk.word_tokenize(s)
-            cands = self.pool.map(get_cand, [tokens for _ in range(total_lists)])
+            eps = epsilon[i]
+            cands = self.pool.map(get_cand, [(tokens, eps) for _ in range(total_lists)])
             temp_replace = []
             for i in range(len(cands[0])):
                 i_cands = [x[i] for x in cands if x[i] is not None]
@@ -385,7 +398,8 @@ class Diffractor():
         return perturbed, num_perturbed, num_diff, total, round(np.mean(support), 3)
 
     def geometric(self, l, idx, epsilon, l_id, rng=None, scoring=None):
-        new_idx = self.geo_mech.randomise(idx)
+        geo_mech = diffprivlib.mechanisms.GeometricTruncated(epsilon=epsilon, lower=0, upper=min([len(x)-1 for x in self.L.lists]))
+        new_idx = geo_mech.randomise(idx)
         return l[new_idx]
 
     def truncated_exponential(self, l, idx, epsilon, l_id, rng, scoring="distance"):
