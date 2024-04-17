@@ -28,7 +28,6 @@ def worker_init(lists, mapping_word, func, st, rn, sc):
     global my_idx
     global my_list
     global my_mapping
-    #global epsilon
     global function
     global rep_stop
     global my_rng
@@ -37,7 +36,6 @@ def worker_init(lists, mapping_word, func, st, rn, sc):
     my_idx = mp.current_process()._identity[0] % len(lists)
     my_list = lists[my_idx].copy()
     my_mapping = mapping_word.copy()
-    #epsilon = eps
     function = func
     rep_stop = st
     my_rng = np.random.default_rng(rn[my_idx])
@@ -47,7 +45,6 @@ def get_cand(arg):
     global my_idx
     global my_list
     global my_mapping
-    #global epsilon
     global function
     global rep_stop
     global my_rng
@@ -57,7 +54,7 @@ def get_cand(arg):
     epsilon = arg[1]
 
     cands = []
-    for t in tokens:
+    for t, e in zip(tokens, epsilon):
         if t in stop and rep_stop == False:
             cands.append(t)
             continue
@@ -70,7 +67,7 @@ def get_cand(arg):
         if start is None:
             cands.append(None)
         else:
-            cands.append(function(my_list, start, epsilon, my_idx, my_rng, scoring))
+            cands.append(function(my_list, start, e, my_idx, my_rng, scoring))
     return cands
 #######################################################################
 
@@ -201,8 +198,7 @@ class Lists():
 
         for i in range(self.num_lists):
             # Init RNGs
-            #rng_seed = 42
-            rng_indices = np.random.default_rng()#seed = rng_seed)
+            rng_indices = np.random.default_rng()
             indices = starting_idx_fn(dim, idx_vec, self.num_lists, rng_indices)
 
             # Init faiss
@@ -345,7 +341,6 @@ class Diffractor():
         self.RNG = np.random.default_rng(42)
         self.SS = np.random.SeedSequence(42)
 
-        #self.geo_mech = diffprivlib.mechanisms.GeometricTruncated(epsilon=self.epsilon, lower=0, upper=min([len(x)-1 for x in L.lists]))
         if method == "TEM":
             METHOD = self.truncated_exponential
         else:
@@ -366,10 +361,15 @@ class Diffractor():
             texts = [texts]
         
         if epsilon is not None and not isinstance(epsilon, list):
-            print("Invalid epsilon format.")
+            print("Invalid epsilon format (must be a list).")
+            return
+        elif epsilon is not None and isinstance(epsilon, list) and len(epsilon) != len(texts):
+            print("Invalid epsilon format (epsilon does not match the number of input texts).")
             return
         elif epsilon is None:
-            epsilon = [epsilon for _ in range(tokens)]
+            epsilon = []
+            for t in texts:
+                epsilon.append([self.epsilon for _ in range(len(nltk.word_tokenize(t)))])
 
         total_lists = len(self.L.lists)
         perturbed = []

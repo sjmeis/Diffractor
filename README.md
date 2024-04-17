@@ -20,7 +20,7 @@ With the Lists object ready, you can now set up a Diffractor. Some parameters he
 - *method*: the exact underlying method, either "TEM" or "geometric" (default: geometric)
 - *rep_stop*: whether to replace stop words or not (default: False == do not replace)
 
-With these, simply call `D = Diffractor(L=L, **args)`.
+With these, simply call `D = Diffractor.Diffractor(L=L, **args)`.
 
 ### Text Privatization
 `1-Diffractor` is optimized to run on multiple cores, and to process input texts in parallel. Therefore, the optimal usage is:
@@ -28,3 +28,6 @@ With these, simply call `D = Diffractor(L=L, **args)`.
 `private_texts = D.rewrite(input_texts)`
 
 with *input_texts* as a list of inputs texts, i.e., a list of sentences / documents.
+
+Note that the *epsilon* parameter is optional for `rewrite`. If no epsilon is specified, the default epsilon used in the instantiation of the `Diffractor` will be used.
+If you wish to provide the *epsilon* parameter to `rewrite`, this must be in the form of a list of lists of epsilon values, one for each input text to the function. Concretely, for each text in *input_texts*, there should be a corresponding list of epsilons matching the number of tokens (i.e., as determined by `nltk.word_tokenize`). Note that this feature is optional and was not used for the testing of `1-Diffractor`!
