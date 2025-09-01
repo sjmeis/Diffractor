@@ -31,3 +31,25 @@ with *input_texts* as a list of inputs texts, i.e., a list of sentences / docume
 
 Note that the *epsilon* parameter is optional for `rewrite`. If no epsilon is specified, the default epsilon used in the instantiation of the `Diffractor` will be used.
 If you wish to provide the *epsilon* parameter to `rewrite`, this must be in the form of a list of lists of epsilon values, one for each input text to the function. Concretely, for each text in *input_texts*, there should be a corresponding list of epsilons matching the number of tokens (i.e., as determined by `nltk.word_tokenize`). Note that this feature is optional and was not used for the testing of `1-Diffractor`!
+
+## Citation
+Please considering citing the original work thsat introduced `1-Diffractor`. Thank you!
+
+```
+inproceedings{10.1145/3643651.3659896,
+author = {Meisenbacher, Stephen and Chevli, Maulik and Matthes, Florian},
+title = {1-Diffractor: Efficient and Utility-Preserving Text Obfuscation Leveraging Word-Level Metric Differential Privacy},
+year = {2024},
+isbn = {9798400705564},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3643651.3659896},
+doi = {10.1145/3643651.3659896},
+booktitle = {Proceedings of the 10th ACM International Workshop on Security and Privacy Analytics},
+pages = {23–33},
+numpages = {11},
+keywords = {data privacy, differential privacy, natural language processing},
+location = {Porto, Portugal},
+series = {IWSPA '24}
+}
+```
