@@ -33,7 +33,7 @@ Note that the *epsilon* parameter is optional for `rewrite`. If no epsilon is sp
 If you wish to provide the *epsilon* parameter to `rewrite`, this must be in the form of a list of lists of epsilon values, one for each input text to the function. Concretely, for each text in *input_texts*, there should be a corresponding list of epsilons matching the number of tokens (i.e., as determined by `nltk.word_tokenize`). Note that this feature is optional and was not used for the testing of `1-Diffractor`!
 
 ## Citation
-Please considering citing the original work thsat introduced `1-Diffractor`. Thank you!
+Please consider citing the original work thsat introduced `1-Diffractor`. Thank you!
 
 ```
 inproceedings{10.1145/3643651.3659896,
