@@ -1,42 +1,92 @@
+<div align="left">
+
+  [![PyPI version](https://img.shields.io/pypi/v/diffractor.svg)](https://pypi.org/project/diffractor/)
+  [![License](https://img.shields.io/github/license/sjmeis/diffractor.svg)](https://github.com/sjmeis/diffractor/blob/main/LICENSE)
+
+</div>
+
 # 1-Diffractor
-Code repository for `1-Diffractor`, a highly efficient word-level Metric Differential Privacy mechanism.
+`1-Diffractor` is a high-performance library for word-level text perturbation leveraging Metric Differential Privacy. It maps text into 1D sorted embedding spaces to apply noise, ensuring privacy guarantees while maintaining semantic utility.
 
-## Quick Start
-`1-Diffractor` is made up of two parts: (1) lists, and (2) the Diffractor. In order to use the Diffractor mechanism, you must initiate a `Lists` object and pass this to a `Diffractor` object.
 
-### Creating Lists
-In order to create a Lists object, use must initialize with the following parameters:
-- *num_lists*: number of lists per embedding model (default: 1)
-- *model_names*: which specific models to use (default: use all)
-- *home*: location of the embedding files (default: current directory)
+## Key Features
+ - **Metric DP Implementation**: Support for both Truncated Geometric and Truncated Exponential (TEM) mechanisms.
+ - **Automated Embedding Management**: Automatically downloads and caches filtered embedding models (GloVe, Word2Vec, Numberbatch).
+ - **Parallel Processing**: Uses optimized multiprocessing to perturb large batches of text quickly.
+ - **BYOE (Bring Your Own Embeddings)**: CLI tools to clean and integrate custom embedding files into the `1-Diffractor`.
 
-To create the Lists, simply call `L = Diffractor.Lists(**args)`. This process will take a short while, depending on the above parameters.
+## Quickstart Guide
+### Installation
+```bash
+pip install dp-diffractor
+```
 
-NOTE: for the default set of lists you must download the models from the following [directory](https://drive.google.com/drive/folders/1ExL4XIxYCK1_9oiy5PwwMlxwqCImYW9W?usp=sharing). Then you must specify the corresponding *home* argument.
+### Basic Usage
+```python
+from diffractor import Diffractor, DiffractorConfig
 
-### Initalializing the Diffractor
-With the Lists object ready, you can now set up a Diffractor. Some parameters here:
-- *epsilon*: the privacy parameter (default: 5)
-- *method*: the exact underlying method, either "TEM" or "geometric" (default: geometric)
-- *rep_stop*: whether to replace stop words or not (default: False == do not replace)
+# Configure the privacy mechanism
+config = DiffractorConfig(
+    method="geometric", 
+    epsilon=1.0, 
+    verbose=True
+)
 
-With these, simply call `D = Diffractor.Diffractor(L=L, **args)`.
+with Diffractor(config) as df:
+    texts = ["Differential Privacy is really cool!", "Hello world."]
+    perturbed = df.rewrite(texts)
+    print(perturbed)
+```
 
-### Text Privatization
-`1-Diffractor` is optimized to run on multiple cores, and to process input texts in parallel. Therefore, the optimal usage is:
+## Advanced Configuration
+The `DiffractorConfig` object allows you to customize the privatization parameters:
 
-`private_texts = D.rewrite(input_texts)`
+| Parameter         | Default       | Description                                              |
+|-------------------|---------------|----------------------------------------------------------|
+| `method`            | `geometric`   | The DP mechanism: `geometric` or `TEM`.                  |
+| `epsilon`           | `1.0`           | Privacy budget (ε). Lower is more private.               |
+| `gamma`             | `5`             | Neighborhood radius for the `TEM` scoring function.      |
+| `sensitivity`       | `1.0`           | Sensitivity of the scoring function.                     |
+| `replace_stopwords` | `False`         | If False, keeps common stopwords unchanged.              |
+| `verbose`           | `True`          | Enables progress bars and status logging.                |
+| `seed`              | `42`            | Global seed for reproducible perturbations.              |
 
-with *input_texts* as a list of inputs texts, i.e., a list of sentences / documents.
 
-Note that the *epsilon* parameter is optional for `rewrite`. If no epsilon is specified, the default epsilon used in the instantiation of the `Diffractor` will be used.
-If you wish to provide the *epsilon* parameter to `rewrite`, this must be in the form of a list of lists of epsilon values, one for each input text to the function. Concretely, for each text in *input_texts*, there should be a corresponding list of epsilons matching the number of tokens (i.e., as determined by `nltk.word_tokenize`). Note that this feature is optional and was not used for the testing of `1-Diffractor`!
+---
 
-## Citation
-Please consider citing the original work that introduced `1-Diffractor`. Thank you!
+## Managing Embeddings
+
+`1-Diffractor` keeps a local cache (by default, `~/.cache/diffractor`) to store embedding files.
+
+### Custom Embeddings (BYOE)
+If you have your own embedding file, you must filter it against the internal vocabulary to ensure it works with the privatization mechanism:
 
 ```
-inproceedings{10.1145/3643651.3659896,
+# In your terminal
+diffractor-clean path/to/my_vectors.txt
+```
+
+Then, use it during startup:
+
+```python
+df = Diffractor(model_names=["my_vectors_filtered"])
+```
+
+### Default Models
+By default, `1-Diffractor` fetches and uses the following embedding models:
+ - `conceptnet-numberbatch-19-08-300`
+ - `glove-twitter-200`
+ - `glove-wiki-gigaword-300`
+ - `glove-commoncrawl-30`
+ - `word2vec-google-news-300`
+ 
+---
+
+## Citation
+If you find `1-Diffractor` useful or make use of it in your research, please be sure to cite the original paper:
+
+```
+@inproceedings{10.1145/3643651.3659896,
 author = {Meisenbacher, Stephen and Chevli, Maulik and Matthes, Florian},
 title = {1-Diffractor: Efficient and Utility-Preserving Text Obfuscation Leveraging Word-Level Metric Differential Privacy},
 year = {2024},
@@ -51,5 +101,19 @@ numpages = {11},
 keywords = {data privacy, differential privacy, natural language processing},
 location = {Porto, Portugal},
 series = {IWSPA '24}
+}
+```
+
+Please also consider citing the hosted embedding files:
+
+```
+@dataset{meisenbacher_2026_19701515,
+  author       = {Meisenbacher, Stephen},
+  title        = {Filtered Embedding Files for 1-Diffractor},
+  month        = apr,
+  year         = 2026,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.19701515},
+  url          = {https://doi.org/10.5281/zenodo.19701515},
 }
 ```

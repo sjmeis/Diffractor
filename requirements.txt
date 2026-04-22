@@ -1,4 +1,3 @@
-diffprivlib
 faiss_cpu
 gensim
 importlib_resources
