@@ -39,7 +39,6 @@ class Diffractor:
         self.close()
 
     def start(self):
-        """Initializes the multiprocessing pool."""
         if self._pool is not None:
             return
 

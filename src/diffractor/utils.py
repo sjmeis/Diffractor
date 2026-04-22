@@ -1,6 +1,6 @@
 import faiss
 import numpy as np
-from typing import Set, List
+from typing import List
 from gensim.models import KeyedVectors
 import importlib_resources as impresources
 from pathlib import Path

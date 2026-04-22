@@ -1,4 +1,3 @@
-import os
 import requests
 from pathlib import Path
 from tqdm import tqdm
