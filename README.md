@@ -1,6 +1,6 @@
 <div align="left">
 
-  [![PyPI version](https://img.shields.io/pypi/v/diffractor.svg)](https://pypi.org/project/diffractor/)
+  [![PyPI version](https://img.shields.io/pypi/v/dp-diffractor.svg)](https://pypi.org/project/dp-diffractor/)
   [![License](https://img.shields.io/github/license/sjmeis/diffractor.svg)](https://github.com/sjmeis/diffractor/blob/main/LICENSE)
 
 </div>
