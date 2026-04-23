@@ -9,4 +9,4 @@ __all__ = [
     "ensure_embeddings",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"

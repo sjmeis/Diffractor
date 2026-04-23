@@ -65,7 +65,9 @@ class Diffractor:
 
     def rewrite(self, texts: Union[str, List[str]], epsilon: Optional[Union[float, List[float]]] = None) -> List[str]:
         if isinstance(texts, str):
-            texts = [texts]
+            texts = [texts.lower()]
+        else:
+            texts = [x.lower() for x in texts]
 
         if self._pool is None:
             self.start()

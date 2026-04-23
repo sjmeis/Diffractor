@@ -40,6 +40,8 @@ with Diffractor(config) as df:
 
 Optionally, you can also pass an `epsilon` directly to `rewrite` without having to instantiate the mechanism again. Additionally, you may pass a list of `epsilon` values, where the length of this list much match the token count of the text exactly, as per `nltk.word_tokenize`.
 
+**Note**: due to the nature of the word embedding models, the input text must be all lowercase! We perform an extra check for this as well and convert the inputs to lowercase.
+
 ## Advanced Configuration
 The `DiffractorConfig` object allows you to customize the privatization parameters:
 
