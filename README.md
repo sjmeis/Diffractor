@@ -38,6 +38,8 @@ with Diffractor(config) as df:
     print(perturbed)
 ```
 
+Optionally, you can also pass an `epsilon` directly to `rewrite` without having to instantiate the mechanism again. Additionally, you may pass a list of `epsilon` values, where the length of this list much match the token count of the text exactly, as per `nltk.word_tokenize`.
+
 ## Advanced Configuration
 The `DiffractorConfig` object allows you to customize the privatization parameters:
 
