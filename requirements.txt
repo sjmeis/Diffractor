@@ -3,5 +3,4 @@ gensim
 importlib_resources
 nltk
 numpy
-scipy
 tqdm

@@ -13,7 +13,7 @@
  - **Metric DP Implementation**: Support for both Truncated Geometric and Truncated Exponential (TEM) mechanisms.
  - **Automated Embedding Management**: Automatically downloads and caches filtered embedding models (GloVe, Word2Vec, Numberbatch).
  - **Parallel Processing**: Uses optimized multiprocessing to perturb large batches of text quickly.
- - **BYOE (Bring Your Own Embeddings)**: CLI tools to clean and integrate custom embedding files into the `1-Diffractor`.
+ - **BYOE (Bring Your Own Embeddings)**: CLI tools to clean and integrate custom embedding files into `1-Diffractor`.
 
 ## Quickstart Guide
 ### Installation
