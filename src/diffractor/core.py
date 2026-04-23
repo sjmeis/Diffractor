@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import numpy as np
 import nltk
-from typing import List, Union, Optional, Tuple
+from typing import List, Union, Optional
 from dataclasses import dataclass
 from tqdm.auto import tqdm
 from nltk.tokenize.treebank import TreebankWordDetokenizer
@@ -63,23 +63,39 @@ class Diffractor:
             "rng": np.random.default_rng(seeds[worker_id])
         }
 
-    def rewrite(self, texts: Union[str, List[str]]) -> List[str]:
+    def rewrite(self, texts: Union[str, List[str]], epsilon: Optional[Union[float, List[float]]] = None) -> List[str]:
         if isinstance(texts, str):
             texts = [texts]
-        
+
         if self._pool is None:
             self.start()
 
         results = []
         for text in tqdm(texts, disable=not self.config.verbose, desc="Rewriting"):
             tokens = nltk.word_tokenize(text)
-            candidate_matrix = self._pool.map(apply_privacy_mechanism, tokens)
-            perturbed_tokens = [self._pick_final_word(t, cands) for t, cands in zip(tokens, candidate_matrix)]
+
+            if isinstance(epsilon, list):
+                if len(epsilon) != len(tokens):
+                    raise ValueError(f"Epsilon list length ({len(epsilon)}) must match token count ({len(tokens)}).")
+                token_epsilons = epsilon
+            else:
+                active_eps = epsilon if epsilon is not None else self.config.epsilon
+                token_epsilons = [active_eps] * len(tokens)
+
+            perturbed_tokens = []
+            for token, token_eps in zip(tokens, token_epsilons):
+                args = [(token, token_eps)] * len(self.mgr.lists)
+                candidates = self._pool.starmap(apply_privacy_mechanism, args)
+                final_word = self._pick_final_word(token, candidates)
+                perturbed_tokens.append(final_word)
             results.append(self.detok.detokenize(perturbed_tokens))
             
         return results
 
     def _pick_final_word(self, original_token: str, candidates: List[Optional[str]]) -> str:
+        if candidates is None:
+            return original_token
+
         valid_cands = [c for c in candidates if c is not None]
 
         if not valid_cands:
@@ -93,7 +109,7 @@ class Diffractor:
             self._pool.join()
             self._pool = None
 
-def apply_privacy_mechanism(token: str) -> Optional[str]:
+def apply_privacy_mechanism(token: str, epsilon: float) -> Optional[str]:
     res = _RESOURCES
     config = res["config"]
     rng = res["rng"]
@@ -109,7 +125,7 @@ def apply_privacy_mechanism(token: str) -> Optional[str]:
     idx = mapping[token]
 
     if config.method == "geometric":
-        p = 1 - np.exp(-config.epsilon / config.sensitivity)
+        p = 1 - np.exp(-epsilon / config.sensitivity)
         noise = rng.geometric(p) - rng.geometric(p)
         new_idx = int(np.clip(idx + noise, 0, len(s_list) - 1))
         return s_list[new_idx]
@@ -125,9 +141,9 @@ def apply_privacy_mechanism(token: str) -> Optional[str]:
         support_size = len(s_list) - len(neighborhood_indices)
         if support_size <= 0: support_size = 1 # Avoid log(0)
         
-        perp_score = (-1.0 * config.gamma) + (2.0 * config.sensitivity * np.log(support_size) / config.epsilon)
+        perp_score = (-1.0 * config.gamma) + (2.0 * config.sensitivity * np.log(support_size) / epsilon)
         
-        scale = (2.0 * config.sensitivity) / config.epsilon
+        scale = (2.0 * config.sensitivity) / epsilon
         noisy_scores = [s + rng.gumbel(loc=0, scale=scale) for s in scores]
         noisy_perp = perp_score + rng.gumbel(loc=0, scale=scale)
         
